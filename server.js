@@ -11,18 +11,21 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.get("/", (req, res) => {
-	console.log("Here")
+	console.log("a user connected")
 	res.sendFile(__dirname + "/index.html")
 })
 
 io.on('connection', (socket) => {
-  socket.on('chat message', (msg) => {
-    socket.broadcast.emit('chat message', msg);
-	io.to(socket.id).emit('ip', socket.handshake.address);
+  socket.on('CreateGame', (msg) => {
+    console.log(msg);
+    socket.broadcast.emit('JoinGame', 'Join Game');
+	  io.to(socket.id).emit('WaitForPlayer', 'Waiting For Player To Join');
   });
-  console.log(socket.handshake.address);
+
+  socket.on('JoinGame', (msg) => {
+    console.log(msg);
+    io.emit('StartGame', 'Game Will Start Soon')
+  });
 });
 
 server.listen(8080, "0.0.0.0")
-
-// can u see this?
