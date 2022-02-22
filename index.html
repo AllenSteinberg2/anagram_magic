@@ -1,37 +1,44 @@
 <html>
 <head>
 <meta charset="utf-8">
-Hello
 </head>
-<body>
-<form action="" id="form">
-	<input type="text" name="inputBox" id="input">
-    <button type="submit" name="button1">Enter</button>
-</form>
-<h1 name="textSend" id="textSend">Enter a word.<h1>
-<h1 id="ID">----<h1>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var form = document.getElementById('form');
-  var input = document.getElementById('input');
 
+<body>
+
+<div id="start"> 
+<button type="submit" id="start_button" onclick="createGame()">Create Game</button>
+</div> 
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
   var socket = io();
+
+  function createGame() {
+    socket.emit('CreateGame', 'a game has been created')
+  }
+
+  function joinGame() {
+    socket.emit('JoinGame', 'a game has been joined')
+  }
   
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (input.value) {
-      socket.emit('chat message', input.value);
-      input.value = '';
-    }
+  socket.on('JoinGame', function(msg) {
+    console.log(msg);
+    document.getElementById("start_button").innerHTML = msg;
+    document.getElementById("start_button").setAttribute('onclick', 'joinGame()');
   });
   
-  socket.on('chat message', function(msg) {
-    document.getElementById("textSend").innerHTML = msg;
+  socket.on('WaitForPlayer', function(msg) {
+    console.log(msg);
+    document.getElementById("start_button").innerHTML = msg;
+    document.getElementById("start_button").disabled = true;
   });
+
+  socket.on('StartGame', function(msg) {
+    console.log(msg);
+    document.getElementById("start").innerHTML = msg;
+  });  
   
-  socket.on('ip', function(msg) {
-    document.getElementById("ID").innerHTML = msg;
-  });
 </script>
 </body>
 </html>
