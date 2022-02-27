@@ -9,12 +9,29 @@
 <button type="submit" id="start_button" onclick="createGame()">Create Game</button>
 </div> 
 
+<div id="choose letters" style="display: none">
+  <button type="submit" id="consonant_button" onclick="AddConsonant()">Choose Consonant</button>
+  <button type="submit" id="vowel_button" onclick="AddVowel()">Choose Vowel</button>
+</div>
+
+<div id="not choose letters" style="display: none">
+  <p id = "not choose letters message">Waiting for player to choose letters</p>
+</div>
+
+<div id="letters" style="display: none">
+  <p id = "letter">
+  </p>
+</div>
+
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
   var socket = io();
 
+  
+
   function createGame() {
+    console.log(window.location.href)
     socket.emit('CreateGame', 'a game has been created')
   }
 
@@ -34,10 +51,32 @@
     document.getElementById("start_button").disabled = true;
   });
 
-  socket.on('StartGame', function(msg) {
+  socket.on('ChooseLetters', function(msg) {
     console.log(msg);
-    document.getElementById("start").innerHTML = msg;
+    document.getElementById("start").style.display = "none";
+    document.getElementById("choose letters").style.display = "inline";
+    document.getElementById("letters").style.display = "inline";
   });  
+
+  socket.on('NotChooseLetters', function(msg) {
+    console.log(msg);
+    document.getElementById("start").style = "display: none";
+    document.getElementById("not choose letters").style.display = "inline";
+    document.getElementById("letters").style.display = "inline";
+  });  
+
+  function AddConsonant() {
+    socket.emit('AddConsonant', 'a consonant has been added')
+  }
+
+  function AddVowel() {
+    socket.emit('AddVowel', 'a vowel has been added')
+  }
+
+  socket.on('UpdateLetter', function(msg) {
+    console.log("the letter " + msg + " has been added");
+    document.getElementById("letter").innerHTML = document.getElementById("letter").innerHTML + " " + msg;
+  }) 
   
 </script>
 </body>
