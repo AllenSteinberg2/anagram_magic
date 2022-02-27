@@ -6,7 +6,7 @@
 <body>
 
 <div id="timer" style="display: none">
-  <p id = "timer text">1:00
+  <p id = "timer text">60
   </p>
 </div>
 
@@ -25,10 +25,16 @@
 
 <div id="text box" style="display: none">
   <input id="text input">
+  <button type="submit" id="submit_word_button" onclick="SubmitWord()">Submit Word</button>
 </div>
 
 <div id="letters" style="display: none">
   <p id = "letter">
+  </p>
+</div>
+
+<div id="results" style="display: none">
+  <p id = "results text">
   </p>
 </div>
 
@@ -37,7 +43,8 @@
 <script>
   var socket = io();
 
-  
+  var my_word = "";
+  var their_word = "";  
 
   function createGame() {
     console.log(window.location.href)
@@ -83,9 +90,8 @@
     console.log(msg);
     document.getElementById("not choose letters").style.display = "none";
     document.getElementById("choose letters").style.display = "none";
-	document.getElementById("text box").style.display = "inline";
-	document.getElementById("timer").style.display = "inline";
-	
+	  document.getElementById("text box").style.display = "inline";
+	  document.getElementById("timer").style.display = "inline";
   });
 
   function AddConsonant() {
@@ -96,10 +102,33 @@
     socket.emit('AddVowel', 'a vowel has been added')
   }
 
+  function SubmitWord() {
+    socket.emit('SubmitWord', document.getElementById("text input").value);
+    document.getElementById("submit_word_button").disabled = true;
+    my_word = document.getElementById("text input").value;
+  }
+
   socket.on('UpdateLetter', function(msg) {
     console.log("the letter " + msg + " has been added");
     document.getElementById("letter").innerHTML = document.getElementById("letter").innerHTML + " " + msg;
   }) 
+
+  socket.on('DecrementTimer', function(msg) {
+    document.getElementById("timer text").innerHTML = parseInt(document.getElementById("timer text").innerHTML) - 1;
+  })
+
+  socket.on('UpdateTheirWord', function(msg) {
+    their_word = msg;
+  })
+
+  socket.on('TimeUp', function(msg) {
+    document.getElementById("text box").style.display = "none";
+    document.getElementById("letters").style.display = "none";
+    document.getElementById("timer").style.display = "none";
+    document.getElementById("results").style.display = "inline";
+
+    document.getElementById("results").innerHTML = "my word: " + my_word + "     " + "their word: " + their_word;
+  })
   
 </script>
 </body>

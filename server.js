@@ -16,12 +16,20 @@ const vowels = ["A", "E", "I", "O", "U"]
 
 var consonantCount = 0;
 var letterCount = 0;
+var timer = 60;
+var timerInterval;
+var submissions = 0;
 
-/*
-app.use(bodyParser.urlencoded({
-	extended:true
-}));
-*/
+
+function decrementTimer() {
+  if (timer == 0 || submissions == 2) {
+    clearInterval(timerInterval);
+    io.emit("TimeUp", "hehe")
+  } else {
+    timer--;
+    io.emit("DecrementTimer", "lol")
+  }
+}
 
 app.get("/", (req, res) => {
 	console.log("a user connected");
@@ -53,6 +61,7 @@ io.on('connection', (socket) => {
 	}
 	if(letterCount == 9){
 		io.emit('EnterWord', 'enter word');
+    timerInterval = setInterval(decrementTimer, 1000);
 	}
   });
 
@@ -63,8 +72,15 @@ io.on('connection', (socket) => {
 	letterCount ++;
 	if(letterCount == 9){
 		io.emit('EnterWord', 'enter word');
+    timerInterval = setInterval(decrementTimer, 1000);
 	}
   });
+
+  socket.on('SubmitWord', (msg) => {
+    console.log(msg);
+    submissions ++;
+    socket.broadcast.emit('UpdateTheirWord', msg);
+  })
 });
 
 server.listen(8080, "0.0.0.0")
