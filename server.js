@@ -14,6 +14,9 @@ const consonants = ["L", "N", "R", "S", "T", "L", "N", "R", "S", "T", "L", "N", 
                     "Q", "Z"]
 const vowels = ["A", "E", "I", "O", "U"]
 
+var consonantCount = 0;
+var letterCount = 0;
+
 /*
 app.use(bodyParser.urlencoded({
 	extended:true
@@ -36,19 +39,31 @@ io.on('connection', (socket) => {
     console.log(msg);
   
     socket.broadcast.emit('ChooseLetters', 'choose letters bitch');
-	  io.to(socket.id).emit('NotChooseLetters', 'wait your turn bitch');
+	io.to(socket.id).emit('NotChooseLetters', 'wait your turn bitch');
   });
 
   socket.on('AddConsonant', (msg) => {
     console.log(msg);
     const randomElement = consonants[Math.floor(Math.random() * consonants.length)];
     io.emit('UpdateLetter', randomElement);
+	consonantCount ++;
+	letterCount ++;
+	if(consonantCount == 7){
+		io.to(socket.id).emit('DisableConsonant', '');
+	}
+	if(letterCount == 9){
+		io.emit('EnterWord', 'enter word');
+	}
   });
 
   socket.on('AddVowel', (msg) => {
     console.log(msg);
     const randomElement = vowels[Math.floor(Math.random() * vowels.length)];
     io.emit('UpdateLetter', randomElement);
+	letterCount ++;
+	if(letterCount == 9){
+		io.emit('EnterWord', 'enter word');
+	}
   });
 });
 

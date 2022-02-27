@@ -5,6 +5,11 @@
 
 <body>
 
+<div id="timer" style="display: none">
+  <p id = "timer text">1:00
+  </p>
+</div>
+
 <div id="start"> 
 <button type="submit" id="start_button" onclick="createGame()">Create Game</button>
 </div> 
@@ -16,6 +21,10 @@
 
 <div id="not choose letters" style="display: none">
   <p id = "not choose letters message">Waiting for player to choose letters</p>
+</div>
+
+<div id="text box" style="display: none">
+  <input id="text input">
 </div>
 
 <div id="letters" style="display: none">
@@ -63,7 +72,21 @@
     document.getElementById("start").style = "display: none";
     document.getElementById("not choose letters").style.display = "inline";
     document.getElementById("letters").style.display = "inline";
-  });  
+  });
+  
+  socket.on('DisableConsonant', function(msg) {
+    console.log(msg);
+    document.getElementById("consonant_button").disabled = true;
+  });
+  
+  socket.on('EnterWord', function(msg) {
+    console.log(msg);
+    document.getElementById("not choose letters").style.display = "none";
+    document.getElementById("choose letters").style.display = "none";
+	document.getElementById("text box").style.display = "inline";
+	document.getElementById("timer").style.display = "inline";
+	
+  });
 
   function AddConsonant() {
     socket.emit('AddConsonant', 'a consonant has been added')
