@@ -45,6 +45,8 @@
 
   var my_word = "";
   var their_word = "";  
+  
+  var letterArray = [];
 
   function createGame() {
     console.log(window.location.href)
@@ -92,6 +94,12 @@
     document.getElementById("choose letters").style.display = "none";
 	  document.getElementById("text box").style.display = "inline";
 	  document.getElementById("timer").style.display = "inline";
+	  const letters = document.getElementById("letter").innerHTML;
+	  for(var i = 0; i < letters.length; i++){
+		if(letters.charAt(i) != " " && letters.charAt(i) != "\n"){
+			letterArray.push(letters[i]);
+		}
+	  }
   });
 
   function AddConsonant() {
@@ -103,9 +111,28 @@
   }
 
   function SubmitWord() {
-    socket.emit('SubmitWord', document.getElementById("text input").value);
-    document.getElementById("submit_word_button").disabled = true;
-    my_word = document.getElementById("text input").value;
+	const word = document.getElementById("text input").value;
+	var validWord = true;
+	lettersArrayCopy = [...letterArray];
+	for(var i = 0; i < word.length; i++){
+		var removedLetter = false;
+		for(var j = 0; j < lettersArrayCopy.length; j++){
+			if(word.charAt(i).toUpperCase() == lettersArrayCopy[j]){
+				lettersArrayCopy.splice(j, 1);
+				removedLetter = true;
+				break;
+			}
+		}
+		if(!removedLetter){
+			validWord = false;
+			break;
+		}
+	}
+    if(validWord){
+		socket.emit('SubmitWord', word);
+		document.getElementById("submit_word_button").disabled = true;
+		my_word = word;
+	}
   }
 
   socket.on('UpdateLetter', function(msg) {
