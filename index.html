@@ -129,9 +129,10 @@
 		}
 	}
     if(validWord){
-		socket.emit('SubmitWord', word);
-		document.getElementById("submit_word_button").disabled = true;
-		my_word = word;
+      //word = word.toLowerCase()
+      socket.emit('SubmitWord', word);
+      document.getElementById("submit_word_button").disabled = true;
+      my_word = word;
 	}
   }
 
@@ -148,13 +149,17 @@
     their_word = msg;
   })
 
-  socket.on('TimeUp', function(msg) {
+  socket.on('MyScore', function(msg) {
     document.getElementById("text box").style.display = "none";
     document.getElementById("letters").style.display = "none";
     document.getElementById("timer").style.display = "none";
     document.getElementById("results").style.display = "inline";
 
-    document.getElementById("results").innerHTML = "my word: " + my_word + "     " + "their word: " + their_word;
+    document.getElementById("results").innerHTML = "my word: " + my_word + " = " + msg;
+  })
+
+  socket.on('TheirScore', function(msg) {
+    document.getElementById("results").innerHTML += " ----- their word: " + their_word + " = " + msg;
   })
   
 </script>
