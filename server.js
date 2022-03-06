@@ -14,9 +14,7 @@ const consonants = ["L", "N", "R", "S", "T", "L", "N", "R", "S", "T", "L", "N", 
                     "J", "X", "J", "X", "J", "X",
                     "Q", "Z"]
 const vowels = ["A", "E", "I", "O", "U"]
-var FileReader = require('filereader')
-var fapi = require('file-api')
-var File = fapi.File
+var fs = require("fs");
 
 var consonantCount = 0;
 var letterCount = 0;
@@ -41,9 +39,25 @@ function decrementTimer() {
   }
 }
 
-function checkWord(word) {
-  //check word returns length of word if word is found in words.txt
-  //otherwise returns 0
+function checkWord(word, cb) {
+	//check word returns length of word if word is found in words.txt
+	//otherwise returns 0
+	var ret = 0;
+	
+	fs.readFile('./words.txt', 'utf8', function (err, data) {
+        if (err) cb(err);
+		var ret = 0
+        var fileContents = data
+        var fileContentsArray = fileContents.split(/\r?\n/);
+		for(var i = 0; i < fileContentsArray.length; i++){
+			if(fileContentsArray[i] == word){
+				console.log("found " + word)
+				ret = word.length
+			}
+		}
+		console.log(ret + " " + word + ", in function");
+        cb(null, ret)
+    });
 }
 
 app.get("/", (req, res) => {
@@ -96,12 +110,15 @@ io.on('connection', (socket) => {
   socket.on('SubmitWord', (msg) => {
     console.log(msg);
     submissions ++;
-    var score = checkWord(msg);
-    if (socket.id == playerOneID) {
-      playerOneScore = score;
+    checkWord(msg, function(err, result) {
+	  if(err) throw err;
+	  console.log(result + " " + msg + ", out of function");
+	  if (socket.id == playerOneID) {
+      playerOneScore = result;
     } else {
-      playerTwoScore = score;
+      playerTwoScore = result;
     }
+	});
     socket.broadcast.emit('UpdateTheirWord', msg);
   })
 });
