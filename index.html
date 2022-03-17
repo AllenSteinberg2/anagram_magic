@@ -179,10 +179,12 @@
     document.getElementById("results").style.display = "inline";
 
     document.getElementById("results").innerHTML = "my word: " + my_word + " = " + msg;
+	my_word = ""
   })
 
   socket.on('TheirScore', function(msg) {
     document.getElementById("results").innerHTML += " ----- their word: " + their_word + " = " + msg;
+	their_word = ""
   })
 
   socket.on('9LetterWord', function(result) {
