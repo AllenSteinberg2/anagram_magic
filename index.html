@@ -24,7 +24,7 @@
 </div>
 
 <div id="text box" style="display: none">
-  <input id="text input">
+  <input id="text input" autocomplete="off">
   <button type="submit" id="submit_word_button" onclick="SubmitWord()">Submit Word</button>
 </div>
 
@@ -42,7 +42,7 @@
 
 <script>
   var socket = io();
-
+  var word9 = false;
   var my_word = "";
   var their_word = "";  
   
@@ -70,17 +70,34 @@
   });
 
   socket.on('ChooseLetters', function(msg) {
+    my_word = "";
+    their_word = "";  
+    letterArray = [];
     console.log(msg);
     document.getElementById("start").style.display = "none";
+    document.getElementById("results").style.display = "none";
+    document.getElementById("letter").innerHTML = "";
+    document.getElementById("text input").value = "";
+    document.getElementById("timer text").innerHTML = 60;
     document.getElementById("choose letters").style.display = "inline";
     document.getElementById("letters").style.display = "inline";
+    document.getElementById("submit_word_button").disabled = false;
+    document.getElementById("consonant_button").disabled = false;
   });  
 
   socket.on('NotChooseLetters', function(msg) {
+    my_word = "";
+    their_word = "";  
+    letterArray = [];
     console.log(msg);
     document.getElementById("start").style = "display: none";
+    document.getElementById("results").style.display = "none";
+    document.getElementById("letter").innerHTML = "";
+    document.getElementById("text input").value = "";
+    document.getElementById("timer text").innerHTML = 60;
     document.getElementById("not choose letters").style.display = "inline";
     document.getElementById("letters").style.display = "inline";
+    document.getElementById("submit_word_button").disabled = false;
   });
   
   socket.on('DisableConsonant', function(msg) {
@@ -111,29 +128,35 @@
   }
 
   function SubmitWord() {
-	const word = document.getElementById("text input").value;
-	var validWord = true;
-	lettersArrayCopy = [...letterArray];
-	for(var i = 0; i < word.length; i++){
-		var removedLetter = false;
-		for(var j = 0; j < lettersArrayCopy.length; j++){
-			if(word.charAt(i).toUpperCase() == lettersArrayCopy[j]){
-				lettersArrayCopy.splice(j, 1);
-				removedLetter = true;
-				break;
-			}
-		}
-		if(!removedLetter){
-			validWord = false;
-			break;
-		}
-	}
-    if(validWord){
-      //word = word.toLowerCase()
-      socket.emit('SubmitWord', word);
-      document.getElementById("submit_word_button").disabled = true;
-      my_word = word;
-	}
+    var word = document.getElementById("text input").value;
+    console.log(word9)
+    console.log((word.length != 9))
+    if (!(word9 && (word.length != 9))) {
+      var validWord = true;
+      lettersArrayCopy = [...letterArray];
+      console.log(lettersArrayCopy);
+      console.log(word)
+      for(var i = 0; i < word.length; i++){
+        var removedLetter = false;
+        for(var j = 0; j < lettersArrayCopy.length; j++){
+          if(word.charAt(i).toUpperCase() == lettersArrayCopy[j]){
+            lettersArrayCopy.splice(j, 1);
+            removedLetter = true;
+            break;
+          }
+        }
+        if(!removedLetter){
+          validWord = false;
+          break;
+        }
+      }
+      if(validWord){
+        word = word.toLowerCase()
+        socket.emit('SubmitWord', word);
+        document.getElementById("submit_word_button").disabled = true;
+        my_word = word;
+      }
+    }
   }
 
   socket.on('UpdateLetter', function(msg) {
@@ -160,6 +183,25 @@
 
   socket.on('TheirScore', function(msg) {
     document.getElementById("results").innerHTML += " ----- their word: " + their_word + " = " + msg;
+  })
+
+  socket.on('9LetterWord', function(result) {
+    word9 = true;
+    document.getElementById("start").style.display = "none";
+    document.getElementById("results").style.display = "none";
+    document.getElementById("letter").innerHTML = result.toUpperCase();
+    letterArray = [];
+    for(var i = 0; i < result.length; i++){
+			letterArray.push(result[i].toUpperCase());
+	  }
+    document.getElementById("text input").value = "";
+    document.getElementById("timer text").innerHTML = 60;
+    document.getElementById("choose letters").style.display = "none";
+    document.getElementById("letters").style.display = "inline";
+    document.getElementById("submit_word_button").disabled = false;
+    document.getElementById("submit_word_button").display = "inline";
+    document.getElementById("text box").style.display = "inline";
+	  document.getElementById("timer").style.display = "inline";
   })
   
 </script>
