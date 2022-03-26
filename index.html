@@ -24,7 +24,7 @@
 </div>
 
 <div id="text box" style="display: none">
-  <input id="text input" autocomplete="off">
+  <p id="text input"></p>
   <button type="submit" id="submit_word_button" onclick="SubmitWord()">Submit Word</button>
 </div>
 
@@ -47,6 +47,7 @@
   var their_word = "";  
   
   var letterArray = [];
+  var inputArray = [];
 
   function createGame() {
     console.log(window.location.href)
@@ -70,14 +71,18 @@
   });
 
   socket.on('ChooseLetters', function(msg) {
+    if (letterArray.length > 0 || inputArray.length > 0) {
+      document.removeEventListener('keydown', keyHandler);
+    }
     my_word = "";
     their_word = "";  
     letterArray = [];
+    inputArray = [];
     console.log(msg);
     document.getElementById("start").style.display = "none";
     document.getElementById("results").style.display = "none";
     document.getElementById("letter").innerHTML = "";
-    document.getElementById("text input").value = "";
+    document.getElementById("text input").innerHTML = "";
     document.getElementById("timer text").innerHTML = 60;
     document.getElementById("choose letters").style.display = "inline";
     document.getElementById("letters").style.display = "inline";
@@ -86,14 +91,18 @@
   });  
 
   socket.on('NotChooseLetters', function(msg) {
+    if (letterArray.length > 0 || inputArray.length > 0) {
+      document.removeEventListener('keydown', keyHandler);
+    }
     my_word = "";
     their_word = "";  
     letterArray = [];
+    inputArray = [];
     console.log(msg);
     document.getElementById("start").style = "display: none";
     document.getElementById("results").style.display = "none";
     document.getElementById("letter").innerHTML = "";
-    document.getElementById("text input").value = "";
+    document.getElementById("text input").innerHTML = "";
     document.getElementById("timer text").innerHTML = 60;
     document.getElementById("not choose letters").style.display = "inline";
     document.getElementById("letters").style.display = "inline";
@@ -113,11 +122,35 @@
 	  document.getElementById("timer").style.display = "inline";
 	  const letters = document.getElementById("letter").innerHTML;
 	  for(var i = 0; i < letters.length; i++){
-		if(letters.charAt(i) != " " && letters.charAt(i) != "\n"){
-			letterArray.push(letters[i]);
-		}
+      if(letters.charAt(i) != " " && letters.charAt(i) != "\n"){
+        letterArray.push(letters[i]);
+      }
 	  }
+    document.addEventListener('keydown', keyHandler);
   });
+
+  function keyHandler(event) {
+      var c = String.fromCharCode(event.keyCode)
+      if (event.keyCode == 8 && inputArray.length > 0) {
+        var remove = inputArray.pop();
+        letterArray.push(remove);
+      }
+      for (var i = 0; i < letterArray.length; i++) {
+        if (letterArray[i] == c) {
+          letterArray.splice(i, 1)
+          inputArray.push(c);
+          break;
+        }
+      }
+      document.getElementById("letter").innerHTML = "";
+      for(var i = 0; i < letterArray.length; i++){
+        document.getElementById("letter").innerHTML += " " + letterArray[i];
+      }
+      document.getElementById("text input").innerHTML = "";
+      for(var i = 0; i < inputArray.length; i++){
+        document.getElementById("text input").innerHTML += " " + inputArray[i];
+      }
+    }
 
   function AddConsonant() {
     socket.emit('AddConsonant', 'a consonant has been added')
@@ -128,34 +161,12 @@
   }
 
   function SubmitWord() {
-    var word = document.getElementById("text input").value;
-    console.log(word9)
-    console.log((word.length != 9))
+    var word = document.getElementById("text input").innerHTML.replace(/\s/g,'');
     if (!(word9 && (word.length != 9))) {
-      var validWord = true;
-      lettersArrayCopy = [...letterArray];
-      console.log(lettersArrayCopy);
-      console.log(word)
-      for(var i = 0; i < word.length; i++){
-        var removedLetter = false;
-        for(var j = 0; j < lettersArrayCopy.length; j++){
-          if(word.charAt(i).toUpperCase() == lettersArrayCopy[j]){
-            lettersArrayCopy.splice(j, 1);
-            removedLetter = true;
-            break;
-          }
-        }
-        if(!removedLetter){
-          validWord = false;
-          break;
-        }
-      }
-      if(validWord){
-        word = word.toLowerCase()
-        socket.emit('SubmitWord', word);
-        document.getElementById("submit_word_button").disabled = true;
-        my_word = word;
-      }
+      word = word.toLowerCase()
+      socket.emit('SubmitWord', word);
+      document.getElementById("submit_word_button").disabled = true;
+      my_word = word;
     }
   }
 
@@ -193,10 +204,11 @@
     document.getElementById("results").style.display = "none";
     document.getElementById("letter").innerHTML = result.toUpperCase();
     letterArray = [];
+    inputArray = [];
     for(var i = 0; i < result.length; i++){
 			letterArray.push(result[i].toUpperCase());
 	  }
-    document.getElementById("text input").value = "";
+    document.getElementById("text input").innerHTML = "";
     document.getElementById("timer text").innerHTML = 60;
     document.getElementById("choose letters").style.display = "none";
     document.getElementById("letters").style.display = "inline";
